@@ -1,0 +1,7 @@
+mqtt:
+    ip: test.mosquitto.org
+    port: 1883
+    topic: 4c7833048-9301-3e48-a6c9-fad0112fc79c/telemetry
+
+rest:
+    url: http://echo.jsontest.com/title/ipsum/content/blah
