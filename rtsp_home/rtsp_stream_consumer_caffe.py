@@ -2,9 +2,12 @@ import cv2 as cv
 import numpy as np
 from threading import Thread, Lock
 import time
+import os
 
 RTSP_STREAM = "rtsp://admincamera:adminpwd@192.168.1.7:554/stream1"
-cap = cv.VideoCapture(RTSP_STREAM)
+os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp"
+cap = cv.VideoCapture(RTSP_STREAM, cv.CAP_FFMPEG)
+cap.set(cv.CAP_PROP_BUFFERSIZE, 2)
 if not cap.isOpened():
 	print('RTSP stream not found')
 	exit(-1)
