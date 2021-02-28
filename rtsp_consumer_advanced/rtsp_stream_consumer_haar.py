@@ -2,14 +2,15 @@ import cv2 as cv
 import os
 
 RTSP_STREAM = "rtsp://admincamera:adminpwd@192.168.1.7:554/stream1"
+
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp"
 cap = cv.VideoCapture(RTSP_STREAM, cv.CAP_FFMPEG)
 cap.set(cv.CAP_PROP_BUFFERSIZE, 2)
 
-faceCascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
+faceCascade = cv.CascadeClassifier('model/haarcascade_frontalface_default.xml')
 
 def detect_face(acquiredFrame):
-	#acquiredFrame = cv.resize(acquiredFrame, (800,420), cv.INTER_AREA)
+	acquiredFrame = cv.resize(acquiredFrame, (800,420), cv.INTER_AREA)
 	gray = cv.cvtColor(acquiredFrame, cv.COLOR_BGR2GRAY)
 	faces = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30), flags=cv.CASCADE_SCALE_IMAGE)
 	for (x, y, w, h) in faces:
