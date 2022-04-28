@@ -12,19 +12,24 @@
 #include <ArduinoJson.h>
 #include <Wire.h>
 #include <L3G4200D.h>
+#include <PubSubClient.h>
 
 #define LED 2
 
-
-
-// Replace with your network credentials
-//const char* ssid = "REPLACE_WITH_YOUR_SSID";
-//const char* password = "REPLACE_WITH_YOUR_PASSWORD";
 const char* ssid = "Vodafone-C01960075";
 const char* password = "tgYsZkgHA4xhJLGy";
+//const char* mqtt_server = "broker.hivemq.com";
+const char* mqtt_server = "52.59.17.149";
+//const char* mqtt_server = "broker.emqx.io";
+const int   mqtt_port = 1883;
+const char* output_topic = "esp8266/test-max";
+const char *mqtt_username = "emqx";
+const char *mqtt_password = "public";
 
-// Json Variable to Hold Sensor Readings
-JsonObject readings;
+WiFiClient espClient;
+PubSubClient client(espClient);
+#define MSG_BUFFER_SIZE  (1024)
+char msg[MSG_BUFFER_SIZE];
 
 // Timer variables
 unsigned long lastTime = 0;  
@@ -37,9 +42,9 @@ unsigned long accelerometerDelay = 200;
 // Create a sensor object
 L3G4200D gyroscope;
 
-//sensors_event_t a, g, temp;
-
 float gyroX, gyroY, gyroZ;
+float accX, accY, accZ;
+float temperature;
 
 //Gyroscope sensor deviation
 float gyroXerror = 0.07;
@@ -88,7 +93,7 @@ void initWiFi() {
 
 void initMQTT() {
   Serial.println("init MQTT ....");
-  client.setServer(mqtt_server, 1883);
+  client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
 }
 
@@ -117,9 +122,10 @@ void reconnect() {
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
     String clientId = "ESP8266Client-";
-    clientId += String(random(0xffff), HEX);
+    //clientId += String(random(0xffff), HEX);
+    clientId += String(WiFi.macAddress());
     // Attempt to connect
-    if (client.connect(clientId.c_str())) {
+    if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
       client.publish("myhome/mx/cserver", "hello world");
@@ -135,43 +141,21 @@ void reconnect() {
   }
 }
 
-String getGyroReadings(){
-  Vector norm = gyroscope.readNormalize();
-
-  readings["gyroX"] = norm.XAxis;
-  readings["gyroY"] = norm.YAxis;
-  readings["gyroZ"] = norm.ZAxis;
-
-  String jsonString = "";
-  serializeJson(readings, jsonString);
-  //String jsonString = JSON.stringify(readings);
-  
-  return jsonString;
-}
-
-String getAccReadings() {
-  readings["accX"] = 0;
-  readings["accY"] = 0;
-  readings["accZ"] = 0;
-  String accString = "";
-  serializeJson(readings, accString);
-  //String accString = JSON.stringify (readings);
-  
-  return accString;
-}
-
-String getTemperature(){
-  int temperature = 0;
-  return String(temperature);
-}
-
 void setup() {
   pinMode(LED, OUTPUT);
   Serial.begin(115200);
   initWiFi();
-  initMQTT();
   initL3G4200D();
+  initMQTT();
 }
+
+unsigned long timer = 0;
+float timeStep = 0.01;
+
+// Pitch, Roll and Yaw values
+float pitch = 0;
+float roll = 0;
+float yaw = 0;
 
 void loop() {
   //digitalWrite(LED, HIGH);
@@ -181,34 +165,28 @@ void loop() {
   }
   client.loop();
 
-  unsigned long now = millis();
-  if (now - lastMsg > 2000) {
-    lastMsg = now;
-    ++value;
-    snprintf (msg, MSG_BUFFER_SIZE, "hello world #%ld", value);
-    Serial.print("Publish message: ");
-    Serial.println(msg);
-    client.publish("outTopic", msg);
-  }
-
-  /*
-  if ((millis() - lastTime) > gyroDelay) {
-    // Send Events to the Web Server with the Sensor Readings
-    events.send(getGyroReadings().c_str(),"gyro_readings",millis());
-    lastTime = millis();
-  }
-  if ((millis() - lastTimeAcc) > accelerometerDelay) {
-    // Send Events to the Web Server with the Sensor Readings
-    events.send(getAccReadings().c_str(),"accelerometer_readings",millis());
-    lastTimeAcc = millis();
-  }
-  if ((millis() - lastTimeTemperature) > temperatureDelay) {
-    // Send Events to the Web Server with the Sensor Readings
-    events.send(getTemperature().c_str(),"temperature_reading",millis());
-    lastTimeTemperature = millis();
-  }
-  */
+  DynamicJsonDocument readings(1024);
   
+  Vector norm = gyroscope.readNormalize();
+  readings["gyroX"] = norm.XAxis;
+  readings["gyroY"] = norm.YAxis;
+  readings["gyroZ"] = norm.ZAxis;
+  
+  readings["accX"] = 0;
+  readings["accY"] = 0;
+  readings["accZ"] = 0;
+  
+  readings["temperature"] = 0;
+  
+  String telemetry = "";
+  serializeJson(readings, telemetry);
+  Serial.println(telemetry);
+
+  snprintf (msg, MSG_BUFFER_SIZE, telemetry.c_str());
+  Serial.print("Publish message: ");
+  Serial.println(msg);
+  client.publish(output_topic, msg);
+
   //digitalWrite(LED, LOW);
-  //delay(1000);
+  delay(1000);
 }
