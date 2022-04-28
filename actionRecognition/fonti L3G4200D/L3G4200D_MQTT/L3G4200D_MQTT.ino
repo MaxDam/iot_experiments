@@ -30,6 +30,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 #define MSG_BUFFER_SIZE  (1024)
 char msg[MSG_BUFFER_SIZE];
+bool ledState = 1;
 
 // Timer variables
 unsigned long lastTime = 0;  
@@ -158,12 +159,14 @@ float roll = 0;
 float yaw = 0;
 
 void loop() {
-  //digitalWrite(LED, HIGH);
-
+  
   if (!client.connected()) {
     reconnect();
   }
   client.loop();
+
+  digitalWrite(LED, ledState);
+  ledState = !ledState;
 
   DynamicJsonDocument readings(1024);
   
@@ -186,7 +189,6 @@ void loop() {
   Serial.print("Publish message: ");
   Serial.println(msg);
   client.publish(output_topic, msg);
-
-  //digitalWrite(LED, LOW);
+  
   delay(1000);
 }

@@ -55,22 +55,33 @@ window.addEventListener('resize', onWindowResize, false);
 // Create the 3D representation
 init3D();
 
-// Create a client instance
-//client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "clientId");
-client = new Paho.MQTT.Client("52.59.17.149", 8000, "clientId");
-//client = new Paho.MQTT.Client("test.mosquitto.org", 8000, "clientId");
-//client = new Paho.MQTT.Client("broker.emqx.io", 8000, "clientId");
+function startConnect() {
+	var host = "52.59.17.149";
+	//var host = "broker.hivemq.com";
+	//var host = "test.mosquitto.org";
+	//var host = "broker.emqx.io";
+	var port = 8000;
+	
+	clientID = "clientID-" + parseInt(Math.random() * 100);
 
-// set callback handlers
-client.onConnectionLost = onConnectionLost;
-client.onMessageArrived = onMessageArrived;
+	// Create a client instance
+	client = new Paho.MQTT.Client(host, Number(port), clientID);
+	
+	// set callback handlers
+	client.onConnectionLost = onConnectionLost;
+	client.onMessageArrived = onMessageArrived;
 
-// connect the client
-client.connect({
-	onSuccess: onConnect,
-	userName:  "emqx",
-	password:  "public"
-});
+	// connect the client
+	client.connect({
+		onSuccess: onConnect,
+		/*userName:  "emqx",
+		password:  "public"*/
+	});
+}
+
+function startDisconnect() {
+    client.disconnect();
+}
 
 // called when the client connects
 function onConnect() {
@@ -82,8 +93,8 @@ function onConnect() {
   var y = 0; //Math.floor(Math.random() * 200)
   var z = 0; //Math.floor(Math.random() * 200)
   
-  message = new Paho.MQTT.Message("{\"gyroX\":\""+x+"\",\"gyroY\":\""+y+"\",\"gyroZ\":\""+z+"\"}");
-  message.destinationName = "esp8266/test-max";
+  //message = new Paho.MQTT.Message("{\"gyroX\":\""+x+"\",\"gyroY\":\""+y+"\",\"gyroZ\":\""+z+"\"}");
+  //message.destinationName = "esp8266/test-max";
   //client.send(message);
 }
 
@@ -122,3 +133,5 @@ function onMessageArrived(message) {
 		console.log("error: ", error);
 	}
 }
+
+startConnect();
