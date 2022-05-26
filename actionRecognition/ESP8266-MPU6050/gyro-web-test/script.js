@@ -56,16 +56,17 @@ window.addEventListener('resize', onWindowResize, false);
 init3D();
 
 function startConnect() {
-	var host = "52.59.17.149";
-	//var host = "broker.hivemq.com";
+	//var host = "6f2bddbb318d4bc3b9496192a5073062.s1.eu.hivemq.cloud";
+	//var port = 8884;
 	//var host = "test.mosquitto.org";
-	//var host = "broker.emqx.io";
-	var port = 8000;
+	var host = "5.196.95.208";
+	var port = 8080;
 	
-	clientID = "clientID-" + parseInt(Math.random() * 100);
+	clientID = parseInt(Math.random() * 1000) + "-clientID";
 
 	// Create a client instance
 	client = new Paho.MQTT.Client(host, Number(port), clientID);
+	//client.tls_insecure_set(true);
 	
 	// set callback handlers
 	client.onConnectionLost = onConnectionLost;
@@ -74,8 +75,8 @@ function startConnect() {
 	// connect the client
 	client.connect({
 		onSuccess: onConnect,
-		/*userName:  "emqx",
-		password:  "public"*/
+		/*userName:  "hivemax",
+		password:  "HivePwd1"*/
 	});
 }
 
@@ -111,23 +112,24 @@ function onMessageArrived(message) {
 		console.log("onMessageArrived:"+message.payloadString);
   
 		var obj = JSON.parse(message.payloadString);
-		document.getElementById("gyroX").innerHTML = obj.gyroX;
-		document.getElementById("gyroY").innerHTML = obj.gyroY;
-		document.getElementById("gyroZ").innerHTML = obj.gyroZ;
+		
+		//document.getElementById("deviceId").innerHTML = obj.id;
+		
+		document.getElementById("gyroX").innerHTML = obj.gX;
+		document.getElementById("gyroY").innerHTML = obj.gY;
+		document.getElementById("gyroZ").innerHTML = obj.gZ;
+		
+		document.getElementById("accX").innerHTML = obj.aX;
+		document.getElementById("accY").innerHTML = obj.aY;
+		document.getElementById("accZ").innerHTML = obj.aZ;
+
+		document.getElementById("temp").innerHTML = obj.tp;
 		
 		// Change cube rotation after receiving the readinds
-		cube.rotation.x = obj.gyroY;
-		cube.rotation.z = obj.gyroX;
-		cube.rotation.y = obj.gyroZ;
+		cube.rotation.x = obj.gY;
+		cube.rotation.y = obj.gY;
+		cube.rotation.z = obj.gZ;
 		renderer.render(scene, camera);
-		
-		/*
-		document.getElementById("temp").innerHTML = obj.temperature;
-		
-		document.getElementById("accX").innerHTML = obj.accX;
-		document.getElementById("accY").innerHTML = obj.accY;
-		document.getElementById("accZ").innerHTML = obj.accZ;
-		*/
 	}
 	catch(error) {
 		console.log("error: ", error);
