@@ -61,6 +61,8 @@ function startConnect() {
 	//var host = "test.mosquitto.org";
 	var host = "5.196.95.208";
 	var port = 8080;
+	//var host = "192.168.1.9";
+	//var port = 9001;
 	
 	clientID = parseInt(Math.random() * 1000) + "-clientID";
 

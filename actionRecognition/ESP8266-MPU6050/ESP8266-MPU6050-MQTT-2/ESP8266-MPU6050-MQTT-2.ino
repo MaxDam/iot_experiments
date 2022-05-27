@@ -1,6 +1,6 @@
 
 //tutorial:
-//https://randomnerdtutorials.com/esp8266-nodemcu-mpu-6050-accelerometer-gyroscope-arduino/
+//https://howtomechatronics.com/tutorials/arduino/arduino-and-mpu6050-accelerometer-and-gyroscope-tutorial/
 
 //set enviroment for esp8266:
 //file->preferences->http://arduino.esp8266.com/stable/paoutput_topicckage_esp8266com_index.json
@@ -10,13 +10,10 @@
 
 //install libraries:
 //Sketch->Include Library->Manage Libraries->
-//search: Adafruit MPU6050, install last version of library and last version of the included libraries (Adafruit_BusIO, Adafruit_GFX_Library and Adafruit_Unified_Sensor)
 //search: PubSubClient and install last version of library
 //search: ArduinoJson and install last version of library
 
 #include <ESP8266WiFi.h>
-#include <Adafruit_MPU6050.h>
-#include <Adafruit_Sensor.h>
 #include <ArduinoJson.h>
 #include <Wire.h>
 #include <PubSubClient.h>
@@ -25,15 +22,12 @@
 
 const char* ssid = "Vodafone-C01960075";
 const char* password = "tgYsZkgHA4xhJLGy";
-//const char* mqtt_server = "6f2bddbb318d4bc3b9496192a5073062.s1.eu.hivemq.cloud";
-//const int   mqtt_port = 8883;
-//char* mqtt_server = "test.mosquitto.org";
-//char* mqtt_server = "5.196.95.208";
-char* mqtt_server = "192.168.1.9";
+//char* mqtt_server = "192.168.1.9";
+char* mqtt_server = "test.mosquitto.org";
 const int   mqtt_port = 1883;
 const char* output_topic = "esp8266/test-max";
-const char *mqtt_username = "hivemax";
-const char *mqtt_password = "HivePwd1";
+const char *mqtt_username = "test";
+const char *mqtt_password = "test";
 
 WiFiClient espClient;
 //WiFiClientSecure espClient;
@@ -41,40 +35,16 @@ PubSubClient mqttClient(espClient);
 #define MSG_BUFFER_SIZE  (128) //il server MQTT accetta messaggio fino a 128 caratteri, altrimenti li scarta senza dire nulla
 char msg[MSG_BUFFER_SIZE];
 bool ledState = 1;
-
-// Timer variables
-unsigned long lastTime = 0;  
-unsigned long lastTimeTemperature = 0;
-unsigned long lastTimeAcc = 0;
-unsigned long gyroDelay = 10;
-unsigned long temperatureDelay = 1000;
-unsigned long accelerometerDelay = 200;
-
-// Create a sensor object
-Adafruit_MPU6050 mpu;
-
 String deviceId;
-float accX, accY, accZ;
-float gyroX, gyroY, gyroZ; 
-float temperature;
 
-//Gyroscope sensor deviation
-float gyroXerror = 0.07;
-float gyroYerror = 0.03;
-float gyroZerror = 0.01;
-
-//codice sensor fusion
+const int MPU = 0x68; // MPU6050 I2C address
+float AccX, AccY, AccZ;
+float GyroX, GyroY, GyroZ;
 float accAngleX, accAngleY, gyroAngleX, gyroAngleY, gyroAngleZ;
 float roll, pitch, yaw;
-float accErrorX, accErrorY, gyroErrorX, gyroErrorY, gyroErrorZ;
+float AccErrorX, AccErrorY, GyroErrorX, GyroErrorY, GyroErrorZ;
 float elapsedTime, currentTime, previousTime;
 int c = 0;
-
-//codice rotation
-float rotationX, rotationY, rotationZ;
-float rotationX_error = 0.05;
-float rotationY_error = 0.02;
-float rotationZ_error = 0.01;
 
 static const char *fingerprint PROGMEM = "44 14 9A 3F C3 E9 F1 F3 84 1A B4 9F B6 4D 19 8A B2 92 31 D6";                                                                                           
      
@@ -84,78 +54,28 @@ void initMPU6050(){
   
   Serial.println("Adafruit MPU6050 test!");
 
-  // Try to initialize!
-  if (!mpu.begin()) {
-    Serial.println("Failed to find MPU6050 chip");
-    while (1) {
-      delay(10);
-    }
-  }
-  Serial.println("MPU6050 Found!");
-
+  Serial.begin(19200);
+  Wire.begin();                      // Initialize comunication
+  Wire.beginTransmission(MPU);       // Start communication with MPU6050 // MPU=0x68
+  Wire.write(0x6B);                  // Talk to the register 6B
+  Wire.write(0x00);                  // Make reset - place a 0 into the 6B register
+  Wire.endTransmission(true);        //end the transmission
   /*
-  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-  Serial.print("Accelerometer range set to: ");
-  switch (mpu.getAccelerometerRange()) {
-    case MPU6050_RANGE_2_G:
-      Serial.println("+-2G");
-      break;
-    case MPU6050_RANGE_4_G:
-      Serial.println("+-4G");
-      break;
-    case MPU6050_RANGE_8_G:
-      Serial.println("+-8G");
-      break;
-    case MPU6050_RANGE_16_G:
-      Serial.println("+-16G");
-      break;
-  }
-  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
-  Serial.print("Gyro range set to: ");
-  switch (mpu.getGyroRange()) {
-    case MPU6050_RANGE_250_DEG:
-      Serial.println("+- 250 deg/s");
-      break;
-    case MPU6050_RANGE_500_DEG:
-      Serial.println("+- 500 deg/s");
-      break;
-    case MPU6050_RANGE_1000_DEG:
-      Serial.println("+- 1000 deg/s");
-      break;
-    case MPU6050_RANGE_2000_DEG:
-      Serial.println("+- 2000 deg/s");
-      break;
-  }
-
-  mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
-  Serial.print("Filter bandwidth set to: ");
-  switch (mpu.getFilterBandwidth()) {
-    case MPU6050_BAND_260_HZ:
-      Serial.println("260 Hz");
-      break;
-    case MPU6050_BAND_184_HZ:
-      Serial.println("184 Hz");
-      break;
-    case MPU6050_BAND_94_HZ:
-      Serial.println("94 Hz");
-      break;
-    case MPU6050_BAND_44_HZ:
-      Serial.println("44 Hz");
-      break;
-    case MPU6050_BAND_21_HZ:
-      Serial.println("21 Hz");
-      break;
-    case MPU6050_BAND_10_HZ:
-      Serial.println("10 Hz");
-      break;
-    case MPU6050_BAND_5_HZ:
-      Serial.println("5 Hz");
-      break;
-  }
-  Serial.println("");
-
-  calculate_IMU_error();
+  // Configure Accelerometer Sensitivity - Full Scale Range (default +/- 2g)
+  Wire.beginTransmission(MPU);
+  Wire.write(0x1C);                  //Talk to the ACCEL_CONFIG register (1C hex)
+  Wire.write(0x10);                  //Set the register bits as 00010000 (+/- 8g full scale range)
+  Wire.endTransmission(true);
+  // Configure Gyro Sensitivity - Full Scale Range (default +/- 250deg/s)
+  Wire.beginTransmission(MPU);
+  Wire.write(0x1B);                   // Talk to the GYRO_CONFIG register (1B hex)
+  Wire.write(0x10);                   // Set the register bits as 00010000 (1000deg/s full scale)
+  Wire.endTransmission(true);
+  delay(20);
   */
+  // Call this function if you need to get the IMU error values for your module
+  calculate_IMU_error();
+  delay(20);
   
   digitalWrite(LED, LOW);
   delay(1000);
@@ -166,49 +86,52 @@ void calculate_IMU_error() {
   // Note that we should place the IMU flat in order to get the proper values, so that we then can the correct values
   // Read accelerometer values 200 times
   while (c < 200) {
-    sensors_event_t a, g, temp;
-    mpu.getEvent(&a, &g, &temp);
-    
-    accX = a.acceleration.x;
-    accY = a.acceleration.y;
-    accZ = a.acceleration.z;
+    Wire.beginTransmission(MPU);
+    Wire.write(0x3B);
+    Wire.endTransmission(false);
+    Wire.requestFrom(MPU, 6, true);
+    AccX = (Wire.read() << 8 | Wire.read()) / 16384.0 ;
+    AccY = (Wire.read() << 8 | Wire.read()) / 16384.0 ;
+    AccZ = (Wire.read() << 8 | Wire.read()) / 16384.0 ;
     // Sum all readings
-    accErrorX = accErrorX + ((atan((accY) / sqrt(pow((accX), 2) + pow((accZ), 2))) * 180 / PI));
-    accErrorY = accErrorY + ((atan(-1 * (accX) / sqrt(pow((accY), 2) + pow((accZ), 2))) * 180 / PI));
+    AccErrorX = AccErrorX + ((atan((AccY) / sqrt(pow((AccX), 2) + pow((AccZ), 2))) * 180 / PI));
+    AccErrorY = AccErrorY + ((atan(-1 * (AccX) / sqrt(pow((AccY), 2) + pow((AccZ), 2))) * 180 / PI));
     c++;
   }
   //Divide the sum by 200 to get the error value
-  accErrorX = accErrorX / 200;
-  accErrorY = accErrorY / 200;
+  AccErrorX = AccErrorX / 200;
+  AccErrorY = AccErrorY / 200;
   c = 0;
   // Read gyro values 200 times
   while (c < 200) {
-    sensors_event_t a, g, temp;
-    mpu.getEvent(&a, &g, &temp);
-    gyroX = g.gyro.x;
-    gyroY = g.gyro.y;
-    gyroZ = g.gyro.z;
+    Wire.beginTransmission(MPU);
+    Wire.write(0x43);
+    Wire.endTransmission(false);
+    Wire.requestFrom(MPU, 6, true);
+    GyroX = Wire.read() << 8 | Wire.read();
+    GyroY = Wire.read() << 8 | Wire.read();
+    GyroZ = Wire.read() << 8 | Wire.read();
     // Sum all readings
-    gyroErrorX = gyroErrorX + (gyroX / 131.0);
-    gyroErrorY = gyroErrorY + (gyroY / 131.0);
-    gyroErrorZ = gyroErrorZ + (gyroZ / 131.0);
+    GyroErrorX = GyroErrorX + (GyroX / 131.0);
+    GyroErrorY = GyroErrorY + (GyroY / 131.0);
+    GyroErrorZ = GyroErrorZ + (GyroZ / 131.0);
     c++;
   }
   //Divide the sum by 200 to get the error value
-  gyroErrorX = gyroErrorX / 200;
-  gyroErrorY = gyroErrorY / 200;
-  gyroErrorZ = gyroErrorZ / 200;
+  GyroErrorX = GyroErrorX / 200;
+  GyroErrorY = GyroErrorY / 200;
+  GyroErrorZ = GyroErrorZ / 200;
   // Print the error values on the Serial Monitor
   Serial.print("AccErrorX: ");
-  Serial.println(accErrorX);
+  Serial.println(AccErrorX);
   Serial.print("AccErrorY: ");
-  Serial.println(accErrorY);
+  Serial.println(AccErrorY);
   Serial.print("GyroErrorX: ");
-  Serial.println(gyroErrorX);
+  Serial.println(GyroErrorX);
   Serial.print("GyroErrorY: ");
-  Serial.println(gyroErrorY);
+  Serial.println(GyroErrorY);
   Serial.print("GyroErrorZ: ");
-  Serial.println(gyroErrorZ);
+  Serial.println(GyroErrorZ);
 }
 
 //inizializza la WiFi
@@ -307,8 +230,8 @@ void setup() {
   deviceId = String(random(3000));
   //deviceId = String(WiFi.macAddress());
   initWiFi();
-  printDNSServers();
-  printIPAddressOfHost("test.mosquitto.org");
+  //printDNSServers();
+  //printIPAddressOfHost("test.mosquitto.org");
   initMPU6050();
   initMQTT();
 }
@@ -350,95 +273,56 @@ void loop() {
   ledState = !ledState;
 
   //ottiene i dati dal sensore
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
-
-  //calibra il giroscopio
-  float gyroX_temp = g.gyro.x;
-  if(abs(gyroX_temp) > gyroXerror)  {
-    gyroX += gyroX_temp/50.00;
-  }
-  float gyroY_temp = g.gyro.y;
-  if(abs(gyroY_temp) > gyroYerror) {
-    gyroY += gyroY_temp/70.00;
-  }
-  float gyroZ_temp = g.gyro.z;
-  if(abs(gyroZ_temp) > gyroZerror) {
-    gyroZ += gyroZ_temp/90.00;
-  }
-
-  gyroX = g.gyro.x;
-  gyroY = g.gyro.y;
-  gyroZ = g.gyro.z;
-
-
-
-
-  //-----------------------------------------------------
-  
+  // === Read acceleromter data === //
+  Wire.beginTransmission(MPU);
+  Wire.write(0x3B); // Start with register 0x3B (ACCEL_XOUT_H)
+  Wire.endTransmission(false);
+  Wire.requestFrom(MPU, 6, true); // Read 6 registers total, each axis value is stored in 2 registers
+  //For a range of +-2g, we need to divide the raw values by 16384, according to the datasheet
+  AccX = (Wire.read() << 8 | Wire.read()) / 16384.0; // X-axis value
+  AccY = (Wire.read() << 8 | Wire.read()) / 16384.0; // Y-axis value
+  AccZ = (Wire.read() << 8 | Wire.read()) / 16384.0; // Z-axis value
+  // Calculating Roll and Pitch from the accelerometer data
+  accAngleX = (atan(AccY / sqrt(pow(AccX, 2) + pow(AccZ, 2))) * 180 / PI) - 0.58; // AccErrorX ~(0.58) See the calculate_IMU_error()custom function for more details
+  accAngleY = (atan(-1 * AccX / sqrt(pow(AccY, 2) + pow(AccZ, 2))) * 180 / PI) + 1.58; // AccErrorY ~(-1.58)
+  // === Read gyroscope data === //
   previousTime = currentTime;        // Previous time is stored before the actual time read
   currentTime = millis();            // Current time actual time read
   elapsedTime = (currentTime - previousTime) / 1000; // Divide by 1000 to get seconds
-  //elapsedTime = 0; //by max
-  accX = a.acceleration.x;
-  accY = a.acceleration.y;
-  accZ = a.acceleration.z;
-  accAngleX = (atan(accY / sqrt(pow(accX, 2) + pow(accZ, 2))) * 180 / PI) - 0.58; // accErrorX ~(0.58) See the calculate_IMU_error()custom function for more details
-  accAngleY = (atan(-1 * accX / sqrt(pow(accY, 2) + pow(accZ, 2))) * 180 / PI) + 1.58; // accErrorY ~(-1.58)
-  gyroX = gyroX + 0.56; // gyroErrorX ~(-0.56)
-  gyroY = gyroY - 2; // gyroErrorY ~(2)
-  gyroZ = gyroZ + 0.79; // gyroErrorZ ~ (-0.8)
-  gyroAngleX = gyroAngleX + gyroX * elapsedTime; // deg/s * s = deg
-  gyroAngleY = gyroAngleY + gyroY * elapsedTime;
-  yaw =  yaw + gyroZ * elapsedTime;
+  elapsedTime = 0;
+  Wire.beginTransmission(MPU);
+  Wire.write(0x43); // Gyro data first register address 0x43
+  Wire.endTransmission(false);
+  Wire.requestFrom(MPU, 6, true); // Read 4 registers total, each axis value is stored in 2 registers
+  GyroX = (Wire.read() << 8 | Wire.read()) / 131.0; // For a 250deg/s range we have to divide first the raw value by 131.0, according to the datasheet
+  GyroY = (Wire.read() << 8 | Wire.read()) / 131.0;
+  GyroZ = (Wire.read() << 8 | Wire.read()) / 131.0;
+  // Correct the outputs with the calculated error values
+  GyroX = GyroX + 0.56; // GyroErrorX ~(-0.56)
+  GyroY = GyroY - 2; // GyroErrorY ~(2)
+  GyroZ = GyroZ + 0.79; // GyroErrorZ ~ (-0.8)
+  // Currently the raw values are in degrees per seconds, deg/s, so we need to multiply by sendonds (s) to get the angle in degrees
+  gyroAngleX = gyroAngleX + GyroX * elapsedTime; // deg/s * s = deg
+  gyroAngleY = gyroAngleY + GyroY * elapsedTime;
+  yaw =  yaw + GyroZ * elapsedTime;
   // Complementary filter - combine acceleromter and gyro angle values
   roll = 0.96 * gyroAngleX + 0.04 * accAngleX;
   pitch = 0.96 * gyroAngleY + 0.04 * accAngleY;
-  gyroX = pitch;
-  gyroY = roll;
-  gyroZ = yaw;
-  
-  //------------------------------------------------------- 
-  /*
-  float rotationX_temporary = g.gyro.x;
-  if(abs(rotationX_temporary) > rotationX_error)  {
-    rotationX += rotationX_temporary*0.01;
-  }
-  float rotationY_temporary = g.gyro.y;
-  if(abs(rotationY_temporary) > rotationY_error) {
-    rotationY += rotationY_temporary*0.01;
-  }
-  float rotationZ_temporary = g.gyro.z;
-  if(abs(rotationZ_temporary) > rotationZ_error) {
-    rotationZ += rotationZ_temporary*0.01;
-  }
-  gyroX = rotationX;
-  gyroY = rotationY;
-  gyroZ = rotationZ;
-  */
-  //------------------------------------------------------- 
-  
   
   //inizializza e riempie il json di risposta
   DynamicJsonDocument readings(1024);
   
   //readings["id"] = deviceId;
   
-  readings["gX"] = gyroX;
-  readings["gY"] = gyroY;
-  readings["gZ"] = gyroZ;
+  readings["gX"] = roll;
+  readings["gY"] = pitch;
+  readings["gZ"] = yaw;
   
-  readings["aX"] = a.acceleration.x;
-  readings["aY"] = a.acceleration.y;
-  readings["aZ"] = a.acceleration.z;
-
-/*
-  readings["x"] = pitch;
-  readings["y"] = roll;
-  readings["z"] = yaw;
-*/
+  readings["aX"] = 0;
+  readings["aY"] = 0;
+  readings["aZ"] = 0;
   
-  readings["tp"] = temp.temperature;
+  readings["tp"] = 0;
 
   //prepara il messaggio
   String telemetry = "";
