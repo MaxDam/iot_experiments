@@ -27,9 +27,9 @@ const char* ssid = "Vodafone-C01960075";
 const char* password = "tgYsZkgHA4xhJLGy";
 //const char* mqtt_server = "6f2bddbb318d4bc3b9496192a5073062.s1.eu.hivemq.cloud";
 //const int   mqtt_port = 8883;
-//char* mqtt_server = "test.mosquitto.org";
+char* mqtt_server = "test.mosquitto.org";
 //char* mqtt_server = "5.196.95.208";
-char* mqtt_server = "192.168.1.9";
+//char* mqtt_server = "192.168.1.9";
 const int   mqtt_port = 1883;
 const char* output_topic = "esp8266/test-max";
 const char *mqtt_username = "hivemax";
@@ -281,9 +281,9 @@ void reconnect() {
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
     //i server mqtt ha un timeout di connessione legato allo stesso id, quindi meglio generarlo random
-    String clientId = String(random(3000));
+    String clientId = String(random(3000))+String(random(3000))+String(random(3000))+String(random(3000))+String(random(3000))+String(random(3000));
     clientId += String(random(0xffff), HEX);
-    clientId += "-ESP8266Client"; 
+    //clientId += "-ESP8266Client"; 
     // Attempt to connect
     if (mqttClient.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
       Serial.println("connected");
@@ -379,7 +379,7 @@ void loop() {
   previousTime = currentTime;        // Previous time is stored before the actual time read
   currentTime = millis();            // Current time actual time read
   elapsedTime = (currentTime - previousTime) / 1000; // Divide by 1000 to get seconds
-  //elapsedTime = 0; //by max
+  elapsedTime = 0; //by max
   accX = a.acceleration.x;
   accY = a.acceleration.y;
   accZ = a.acceleration.z;
@@ -424,9 +424,9 @@ void loop() {
   
   //readings["id"] = deviceId;
   
-  readings["gX"] = gyroX;
-  readings["gY"] = gyroY;
-  readings["gZ"] = gyroZ;
+  readings["gX"] = gyroX/10;
+  readings["gY"] = gyroY/10;
+  readings["gZ"] = gyroZ/10;
   
   readings["aX"] = a.acceleration.x;
   readings["aY"] = a.acceleration.y;

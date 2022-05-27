@@ -177,9 +177,9 @@ void reconnect() {
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
     //i server mqtt ha un timeout di connessione legato allo stesso id, quindi meglio generarlo random
-    String clientId = String(random(3000));
+    String clientId = String(random(3000))+String(random(3000))+String(random(3000))+String(random(3000))+String(random(3000))+String(random(3000));
     clientId += String(random(0xffff), HEX);
-    clientId += "-ESP8266Client"; 
+    //clientId += "-ESP8266Client"; 
     // Attempt to connect
     if (mqttClient.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
       Serial.println("connected");
@@ -268,9 +268,9 @@ void loop() {
   
   //readings["id"] = deviceId;
   
-  readings["gX"] = roll;
-  readings["gY"] = pitch;
-  readings["gZ"] = yaw;
+  readings["gX"] = roll/100;
+  readings["gY"] = pitch/100;
+  readings["gZ"] = yaw/100;
   
   readings["aX"] = 0;
   readings["aY"] = 0;
