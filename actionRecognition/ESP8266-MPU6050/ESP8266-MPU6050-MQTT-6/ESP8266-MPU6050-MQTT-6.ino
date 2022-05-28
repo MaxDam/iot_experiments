@@ -1061,9 +1061,9 @@ void loop()
   
   //readings["id"] = deviceId;
   
-  readings["gX"] = angle_x/100;
-  readings["gY"] = angle_y/100;
-  readings["gZ"] = angle_z/100;
+  readings["gX"] = angle_x;
+  readings["gY"] = angle_y;
+  readings["gZ"] = angle_z;
   
   readings["aX"] = 0;
   readings["aY"] = 0;

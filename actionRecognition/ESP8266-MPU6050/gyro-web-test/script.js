@@ -128,20 +128,34 @@ function onMessageArrived(message) {
 		document.getElementById("temp").innerHTML = obj.tp;
 		
 		// Change cube rotation after receiving the readinds
-		//var roll  = THREE.Math.degToRad(obj.r);
-		//var pitch = THREE.Math.degToRad(obj.p);
-		//var yaw   = THREE.Math.degToRad(obj.y);
-		var pitch = THREE.Math.degToRad(obj.gX);
-		var roll  = THREE.Math.degToRad(obj.gY);
-		var yaw   = THREE.Math.degToRad(obj.gZ);
-		cube.rotation.x = pitch;
-		cube.rotation.y = yaw; 
-		cube.rotation.z = roll;
+		//roll  = THREE.Math.degToRad(obj.r);
+		//pitch = THREE.Math.degToRad(obj.p);
+		//yaw   = THREE.Math.degToRad(obj.y);
+		pitch = THREE.Math.degToRad(obj.gX);
+		roll  = THREE.Math.degToRad(obj.gY);
+		yaw   = THREE.Math.degToRad(obj.gZ);
+		cube.rotation.x = pitch+pitchOffset;
+		cube.rotation.y = yaw+yawOffset; 
+		cube.rotation.z = roll+rollOffset;
 		renderer.render(scene, camera);
 	}
 	catch(error) {
 		console.log("error: ", error);
 	}
+}
+
+var pitch = 0;
+var roll  = 0;
+var yaw   = 0;
+		
+var pitchOffset = 0;
+var yawOffset = 0;
+var rollOffset = 0;
+
+function resetPosition() {
+	pitchOffset = -pitch;
+	yawOffset = -yaw;
+	rollOffset = -roll;
 }
 
 startConnect();

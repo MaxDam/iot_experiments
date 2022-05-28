@@ -16,7 +16,7 @@
 //search: ArduinoJson and install last version of library
 
 #include <ESP8266WiFi.h>
-#include <MPU6050_light.h>
+#include <MPU6050.h>
 #include <ArduinoJson.h>
 #include <Wire.h>
 #include <PubSubClient.h>
@@ -44,8 +44,16 @@ bool ledState = 1;
 String deviceId;
 String clientId;
 
-MPU6050 mpu(Wire);
+MPU6050 mpu;
+
+// Timers
 unsigned long timer = 0;
+float timeStep = 0.01;
+
+// Pitch, Roll and Yaw values
+float pitch = 0;
+float roll = 0;
+float yaw = 0;
 
 static const char *fingerprint PROGMEM = "44 14 9A 3F C3 E9 F1 F3 84 1A B4 9F B6 4D 19 8A B2 92 31 D6";                                                                                           
      
@@ -53,15 +61,20 @@ static const char *fingerprint PROGMEM = "44 14 9A 3F C3 E9 F1 F3 84 1A B4 9F B6
 void initMPU6050(){
   digitalWrite(LED, HIGH);
 
-  Wire.begin();
-  byte status = mpu.begin();
-  Serial.print(F("MPU6050 status: "));
-  Serial.println(status);
-  while (status != 0) { } // stop everything if could not connect to MPU6050
-  Serial.println(F("Calculating offsets, do not move MPU6050"));
-  delay(1000);
-  mpu.calcOffsets(); // gyro and accelero
-  Serial.println("Done!\n");
+  // Initialize MPU6050
+  while(!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
+  {
+    Serial.println("Could not find a valid MPU6050 sensor, check wiring!");
+    delay(500);
+  }
+  
+  // Calibrate gyroscope. The calibration must be at rest.
+  // If you don't want calibrate, comment this line.
+  mpu.calibrateGyro();
+
+  // Set threshold sensivty. Default 3.
+  // If you don't want use threshold, comment this line or set 0.
+  mpu.setThreshold(3);
   
   digitalWrite(LED, LOW);
   delay(1000);
@@ -185,32 +198,38 @@ void loop() {
   ledState = !ledState;
 
   //ottiene i dati dal sensore
-  mpu.update();
+  timer = millis();
+
+  // Read normalized values
+  Vector rawGyro = mpu.readRawGyro();
+  Vector normGyro = mpu.readNormalizeGyro();
+  Vector rawAccel = mpu.readRawAccel();
+  Vector normAccel = mpu.readNormalizeAccel();
+  float temp = mpu.readTemperature();
+
+  // Calculate Pitch, Roll and Yaw Gyro
+  pitch = pitch + normGyro.YAxis * timeStep;
+  roll = roll + normGyro.XAxis * timeStep;
+  yaw = yaw + normGyro.ZAxis * timeStep;
+
+  // Calculate Pitch, Roll and Yaw Accel
+  int pitchA = -(atan2(normAccel.XAxis, sqrt(normAccel.YAxis*normAccel.YAxis + normAccel.ZAxis*normAccel.ZAxis))*180.0)/M_PI;
+  int rollA = (atan2(normAccel.YAxis, normAccel.ZAxis)*180.0)/M_PI;
   
   //inizializza e riempie il json di risposta
   DynamicJsonDocument readings(1024);
   
   //readings["id"] = deviceId;
 
-  int pitch  = mpu.getAngleX();
-  int roll   = mpu.getAngleY();
-  int yaw    = mpu.getAngleZ();
-
-  int MIN_DEG = -180;
-  int MAX_DEG = +180;
-  pitch  = map(pitch,-35,+55,MIN_DEG,MAX_DEG);
-  roll   = map(roll,-90,+90,MIN_DEG,MAX_DEG);
-  yaw    = map(yaw,0,400,MIN_DEG,MAX_DEG);
-  
   readings["gX"] = pitch;
   readings["gY"] = roll;
   readings["gZ"] = yaw;
   
-  readings["aX"] = 0;
-  readings["aY"] = 0;
-  readings["aZ"] = 0;
+  readings["aX"] = normAccel.XAxis;
+  readings["aY"] = normAccel.YAxis;
+  readings["aZ"] = normAccel.ZAxis;
   
-  readings["tp"] = 0;
+  readings["tp"] = temp;
 
   //prepara il messaggio
   String telemetry = "";
@@ -224,5 +243,7 @@ void loop() {
   mqttClient.publish(output_topic, msg);
   
   //attende
-  //delay(100);
+  delay(100);
+  // Wait to full timeStep period
+  //delay((timeStep*1000) - (millis() - timer));
 }
