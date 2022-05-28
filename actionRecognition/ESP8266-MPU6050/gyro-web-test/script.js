@@ -128,9 +128,15 @@ function onMessageArrived(message) {
 		document.getElementById("temp").innerHTML = obj.tp;
 		
 		// Change cube rotation after receiving the readinds
-		cube.rotation.x = obj.gY;
-		cube.rotation.y = obj.gY;
-		cube.rotation.z = obj.gZ;
+		//var roll  = THREE.Math.degToRad(obj.r);
+		//var pitch = THREE.Math.degToRad(obj.p);
+		//var yaw   = THREE.Math.degToRad(obj.y);
+		var pitch = THREE.Math.degToRad(obj.gX);
+		var roll  = THREE.Math.degToRad(obj.gY);
+		var yaw   = THREE.Math.degToRad(obj.gZ);
+		cube.rotation.x = pitch;
+		cube.rotation.y = yaw; 
+		cube.rotation.z = roll;
 		renderer.render(scene, camera);
 	}
 	catch(error) {
