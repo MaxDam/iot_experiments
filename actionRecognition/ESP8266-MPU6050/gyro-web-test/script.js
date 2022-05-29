@@ -1,6 +1,22 @@
 let scene, camera, rendered, cube, arrow;
 //{"gX":10,"gY":10,"gZ":10,"aX":10,"aY":0,"aZ":0,"tp":0}
 
+let pitch = 0;
+let roll  = 0;
+let yaw   = 0;
+		
+let pitchOffset = 0;
+let yawOffset = 0;
+let rollOffset = 0;
+
+let aX = 0;
+let aY = 0;
+let aZ = 0;
+
+let aXOffset = 0;
+let aYOffset = 0;
+let aZOffset = 0;
+
 function parentWidth(elem) {
   return elem.parentElement.clientWidth;
 }
@@ -37,13 +53,13 @@ function init3D(){
 
   cube = new THREE.Mesh(geometry, material);
   scene.add(cube);
-  camera.position.z = 5;
+  camera.position.z = 4;
   
   //init arrow
   var sourcePosition = new THREE.Vector3(0, 0, 0);
-  var targetPosition = new THREE.Vector3(6, 0, 0);
+  var targetPosition = new THREE.Vector3(0, 0, 0);
   var direction = sourcePosition.clone().sub(targetPosition);
-  var arrowLength = 6;//direction.length();
+  var arrowLength = direction.length();
   arrow = new THREE.ArrowHelper(direction.normalize(), sourcePosition, arrowLength, 'green', 3, 1);
   //arrow.line.material.linewidth = 5;
   scene.add(arrow);
@@ -103,13 +119,9 @@ function onConnect() {
   console.log("onConnect");
   client.subscribe("esp8266/test-max");
   
-  var x = 0; //Math.floor(Math.random() * 200)
-  var y = 0; //Math.floor(Math.random() * 200)
-  var z = 0; //Math.floor(Math.random() * 200)
-  
-  //message = new Paho.MQTT.Message("{\"gyroX\":\""+x+"\",\"gyroY\":\""+y+"\",\"gyroZ\":\""+z+"\"}");
-  //message.destinationName = "esp8266/test-max";
-  //client.send(message);
+  var x = 0;
+  var y = 0;
+  var z = 0;
 }
 
 // called when the client loses its connection
@@ -143,11 +155,26 @@ function onMessageArrived(message) {
 		roll  = THREE.Math.degToRad(obj.gY);
 		yaw   = THREE.Math.degToRad(obj.gZ);
 		
+		//orientation cube
 		cube.rotation.x = pitch+pitchOffset;
 		cube.rotation.y = yaw+yawOffset; 
 		cube.rotation.z = roll+rollOffset;
 		
-		viewAcceleration(obj.aX, obj.aY, obj.aZ);
+		//acceleration arrow
+		//if(Math.abs(aX-obj.aX)<0.01) obj.aX = -aXOffset;
+		//if(Math.abs(aY-obj.aY)<0.01) obj.aY = -aYOffset;
+		//if(Math.abs(aZ-obj.aZ)<0.01) obj.aZ = -aZOffset;
+		aX = obj.aX;
+		aY = obj.aY;
+		aZ = obj.aZ;
+		var sourcePosition = new THREE.Vector3(0, 0, 0);
+		var targetPosition = new THREE.Vector3(aX+aXOffset, aZ+aZOffset, aY+aYOffset);
+		targetPosition.applyAxisAngle(new THREE.Vector3( 1, 0, 0 ), pitch+pitchOffset);
+		targetPosition.applyAxisAngle(new THREE.Vector3( 0, 1, 0 ), yaw+yawOffset);
+		targetPosition.applyAxisAngle(new THREE.Vector3( 0, 0, 1 ), roll+rollOffset);
+		var direction = sourcePosition.clone().sub(targetPosition);
+		arrow.setDirection(direction.normalize());
+		arrow.setLength(direction.length()*4, 3, 1);
 		
 		renderer.render(scene, camera);
 	}
@@ -156,14 +183,6 @@ function onMessageArrived(message) {
 	}
 }
 
-var pitch = 0;
-var roll  = 0;
-var yaw   = 0;
-		
-var pitchOffset = 0;
-var yawOffset = 0;
-var rollOffset = 0;
-
 //reset solid position
 function resetPosition() {
 	pitchOffset = -pitch;
@@ -171,14 +190,11 @@ function resetPosition() {
 	rollOffset = -roll;
 }
 
-//view acceleration arrow
-function viewAcceleration(aX, aY, aZ) {
-	var sourcePosition = new THREE.Vector3(0, 0, 0);
-	var targetPosition = new THREE.Vector3(aX, aY, aZ);
-	var direction = sourcePosition.clone().sub(targetPosition);
-	arrow.setDirection(direction.normalize());
-	//arrow.setLength(direction.length()+4);
-	arrow.setLength(6, 3, 1);
+//reset acceleration
+function resetAcceleration() {
+	aXOffset = -aX;
+	aYOffset = -aY;
+	aZOffset = -aZ;
 }
 
 startConnect();

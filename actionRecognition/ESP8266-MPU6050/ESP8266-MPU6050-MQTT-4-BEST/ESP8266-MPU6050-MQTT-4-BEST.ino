@@ -213,11 +213,11 @@ void loop() {
   //readings["gY"] = mpu.getGyroY();
   //readings["gZ"] = mpu.getGyroZ();
   
-  readings["aX"] = 0;//mpu.getAccX();
-  readings["aY"] = 0;//mpu.getAccY();
-  readings["aZ"] = 0;//mpu.getAccZ();
+  readings["aX"] = mpu.getAccX();
+  readings["aY"] = -mpu.getAccY();
+  readings["aZ"] = mpu.getAccZ();
   
-  readings["tp"] = 0;//mpu.getTemp();
+  readings["tp"] = mpu.getTemp();
 
   //prepara il messaggio
   String telemetry = "";

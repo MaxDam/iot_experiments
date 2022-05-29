@@ -8,7 +8,7 @@
 
 <!DOCTYPE HTML><html>
 <head>
-  <title>ESP Web Server</title>
+  <title>CONTROLLER TEST</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" type="text/css" href="./style.css">
@@ -18,32 +18,38 @@
 </head>
 <body>
   <div class="topnav">
-    <h1><i class="far fa-compass"></i> MPU6050 <i class="far fa-compass"></i></h1>
+    <h1><i class="far fa-compass"></i>&nbsp;&nbsp;CONTROLLER TEST&nbsp;&nbsp;<i class="far fa-compass"></i></h1>
   </div>
   <div class="content">
     <div class="cards">
-      <div class="card">
+      <!--div class="card">
         <p class="card-title">GYROSCOPE</p>
         <p><span class="reading">X: <span id="gyroX"></span> rad</span></p>
         <p><span class="reading">Y: <span id="gyroY"></span> rad</span></p>
         <p><span class="reading">Z: <span id="gyroZ"></span> rad</span></p>
+      </div-->
+	  <div class="card">
+        <p class="card-title">ORIENTATION</p>
+        <p><span class="reading">PITCH: <span id="gyroX"></span> deg<sup></sup></span></p>
+        <p><span class="reading">ROLL: <span id="gyroY"></span> deg<sup></sup></span></p>
+        <p><span class="reading">YAW: <span id="gyroZ"></span> deg<sup></sup></span></p>
+		<button id="reset" onclick="resetPosition(this)">RESET POSITION</button>
+		<p class="card-title">&nbsp;</p>
       </div>
       <div class="card">
-        <p class="card-title">ACCELEROMETER</p>
+        <p class="card-title">ACCELERATION</p>
         <p><span class="reading">X: <span id="accX"></span> ms<sup>2</sup></span></p>
         <p><span class="reading">Y: <span id="accY"></span> ms<sup>2</sup></span></p>
         <p><span class="reading">Z: <span id="accZ"></span> ms<sup>2</sup></span></p>
+		<button id="reset" onclick="resetAcceleration(this)">RESET ACCEL</button>
+		<p class="card-title">&nbsp;</p>
       </div>
       <div class="card">
         <p class="card-title">TEMPERATURE</p>
         <p><span class="reading"><span id="temp"></span> &deg;C</span></p>
         <p class="card-title">&nbsp;</p>
-        <button id="reset" onclick="resetPosition(this)">RESET POSITION</button>
-      </div>
-	  <div class="card">
         <p class="card-title">DEVICE</p>
         <p><span class="reading"><span id="deviceId">&nbsp;</span></span></p>
-        <p class="card-title">&nbsp;</p>
 		<p class="card-title">&nbsp;</p>
       </div>
     </div>
