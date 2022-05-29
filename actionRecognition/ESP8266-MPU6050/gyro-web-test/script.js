@@ -60,7 +60,7 @@ function init3D(){
   var targetPosition = new THREE.Vector3(0, 0, 0);
   var direction = sourcePosition.clone().sub(targetPosition);
   var arrowLength = direction.length();
-  arrow = new THREE.ArrowHelper(direction.normalize(), sourcePosition, arrowLength, 'green', 3, 1);
+  arrow = new THREE.ArrowHelper(direction.normalize(), sourcePosition, arrowLength, 'green');
   //arrow.line.material.linewidth = 5;
   scene.add(arrow);
 	
@@ -161,12 +161,10 @@ function onMessageArrived(message) {
 		cube.rotation.z = roll+rollOffset;
 		
 		//acceleration arrow
-		//if(Math.abs(aX-obj.aX)<0.01) obj.aX = -aXOffset;
-		//if(Math.abs(aY-obj.aY)<0.01) obj.aY = -aYOffset;
-		//if(Math.abs(aZ-obj.aZ)<0.01) obj.aZ = -aZOffset;
-		aX = obj.aX;
-		aY = obj.aY;
-		aZ = obj.aZ;
+		var accThreshold = 0.05;
+		if(Math.abs(aX-obj.aX) > accThreshold) aX = obj.aX;
+		if(Math.abs(aY-obj.aY) > accThreshold) aY = obj.aY;
+		if(Math.abs(aZ-obj.aZ) > accThreshold) aZ = obj.aZ;
 		var sourcePosition = new THREE.Vector3(0, 0, 0);
 		var targetPosition = new THREE.Vector3(aX+aXOffset, aZ+aZOffset, aY+aYOffset);
 		targetPosition.applyAxisAngle(new THREE.Vector3( 1, 0, 0 ), pitch+pitchOffset);
@@ -174,7 +172,8 @@ function onMessageArrived(message) {
 		targetPosition.applyAxisAngle(new THREE.Vector3( 0, 0, 1 ), roll+rollOffset);
 		var direction = sourcePosition.clone().sub(targetPosition);
 		arrow.setDirection(direction.normalize());
-		arrow.setLength(direction.length()*4, 3, 1);
+		//arrow.setLength(direction.length()*4, 3, 1);
+		arrow.setLength(direction.length()*4, direction.length()*4*0.3,  direction.length()*4*0.3*0.3);
 		
 		renderer.render(scene, camera);
 	}
