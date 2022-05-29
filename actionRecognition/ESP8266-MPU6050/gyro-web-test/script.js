@@ -128,15 +128,16 @@ function onMessageArrived(message) {
 		document.getElementById("temp").innerHTML = obj.tp;
 		
 		// Change cube rotation after receiving the readinds
-		//roll  = THREE.Math.degToRad(obj.r);
-		//pitch = THREE.Math.degToRad(obj.p);
-		//yaw   = THREE.Math.degToRad(obj.y);
 		pitch = THREE.Math.degToRad(obj.gX);
 		roll  = THREE.Math.degToRad(obj.gY);
 		yaw   = THREE.Math.degToRad(obj.gZ);
+		
 		cube.rotation.x = pitch+pitchOffset;
 		cube.rotation.y = yaw+yawOffset; 
 		cube.rotation.z = roll+rollOffset;
+		
+		//viewAcceleration(obj.aX, obj.aY, obj.aZ);
+		
 		renderer.render(scene, camera);
 	}
 	catch(error) {
@@ -152,10 +153,38 @@ var pitchOffset = 0;
 var yawOffset = 0;
 var rollOffset = 0;
 
+//reset solid position
 function resetPosition() {
 	pitchOffset = -pitch;
 	yawOffset = -yaw;
 	rollOffset = -roll;
+}
+
+//view acceleration arrow
+function viewAcceleration(aX, aY, aZ) {
+	var sourcePosition = new THREE.Vector3(0, 0, 0);
+	var targetPosition = new THREE.Vector3(aX, aY, aZ);
+	var direction = sourcePosition.clone().sub(targetPosition);
+	var length = direction.length();
+	var arrowHelper = new THREE.ArrowHelper(direction.normalize(), sourcePosition, length, 0xff0000, length*0.2, length*0.2*0.6);
+	scene.add(arrowHelper);
+	
+	/*
+	//init
+	var sourcePosition = new THREE.Vector3(0, 0, 0);
+	var targetPosition = new THREE.Vector3(0, 0, 0);
+	var direction = sourcePosition.clone().sub(targetPosition);
+	var arrowLength = direction.length();
+	var arrowHelper = new THREE.ArrowHelper(direction.normalize(), sourcePosition, arrowLength, 0xff0000, arrowLength*0.2, arrowLength*0.2*0.6);
+	scene.add(arrowHelper);
+	
+	//update
+	var sourcePosition = new THREE.Vector3(0, 0, 0);
+	var targetPosition = new THREE.Vector3(aX, aY, aZ);
+	var direction = new THREE.Vector3().sub(targetPosition, sourcePosition);
+	arrow.setDirection(direction.normalize());
+	arrow.setLength(direction.length());
+	*/
 }
 
 startConnect();
