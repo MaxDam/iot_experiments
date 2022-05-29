@@ -1,4 +1,5 @@
-let scene, camera, rendered, cube;
+let scene, camera, rendered, cube, arrow;
+//{"gX":10,"gY":10,"gZ":10,"aX":10,"aY":0,"aZ":0,"tp":0}
 
 function parentWidth(elem) {
   return elem.parentElement.clientWidth;
@@ -12,7 +13,7 @@ function init3D(){
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xffffff);
 
-  camera = new THREE.PerspectiveCamera(75, parentWidth(document.getElementById("3Dcube")) / parentHeight(document.getElementById("3Dcube")), 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(100, parentWidth(document.getElementById("3Dcube")) / parentHeight(document.getElementById("3Dcube")), 0.1, 1000);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(parentWidth(document.getElementById("3Dcube")), parentHeight(document.getElementById("3Dcube")));
@@ -37,6 +38,16 @@ function init3D(){
   cube = new THREE.Mesh(geometry, material);
   scene.add(cube);
   camera.position.z = 5;
+  
+  //init arrow
+  var sourcePosition = new THREE.Vector3(0, 0, 0);
+  var targetPosition = new THREE.Vector3(6, 0, 0);
+  var direction = sourcePosition.clone().sub(targetPosition);
+  var arrowLength = 6;//direction.length();
+  arrow = new THREE.ArrowHelper(direction.normalize(), sourcePosition, arrowLength, 'green', 3, 1);
+  //arrow.line.material.linewidth = 5;
+  scene.add(arrow);
+	
   renderer.render(scene, camera);
 }
 
@@ -136,7 +147,7 @@ function onMessageArrived(message) {
 		cube.rotation.y = yaw+yawOffset; 
 		cube.rotation.z = roll+rollOffset;
 		
-		//viewAcceleration(obj.aX, obj.aY, obj.aZ);
+		viewAcceleration(obj.aX, obj.aY, obj.aZ);
 		
 		renderer.render(scene, camera);
 	}
@@ -165,26 +176,9 @@ function viewAcceleration(aX, aY, aZ) {
 	var sourcePosition = new THREE.Vector3(0, 0, 0);
 	var targetPosition = new THREE.Vector3(aX, aY, aZ);
 	var direction = sourcePosition.clone().sub(targetPosition);
-	var length = direction.length();
-	var arrowHelper = new THREE.ArrowHelper(direction.normalize(), sourcePosition, length, 0xff0000, length*0.2, length*0.2*0.6);
-	scene.add(arrowHelper);
-	
-	/*
-	//init
-	var sourcePosition = new THREE.Vector3(0, 0, 0);
-	var targetPosition = new THREE.Vector3(0, 0, 0);
-	var direction = sourcePosition.clone().sub(targetPosition);
-	var arrowLength = direction.length();
-	var arrowHelper = new THREE.ArrowHelper(direction.normalize(), sourcePosition, arrowLength, 0xff0000, arrowLength*0.2, arrowLength*0.2*0.6);
-	scene.add(arrowHelper);
-	
-	//update
-	var sourcePosition = new THREE.Vector3(0, 0, 0);
-	var targetPosition = new THREE.Vector3(aX, aY, aZ);
-	var direction = new THREE.Vector3().sub(targetPosition, sourcePosition);
 	arrow.setDirection(direction.normalize());
-	arrow.setLength(direction.length());
-	*/
+	//arrow.setLength(direction.length()+4);
+	arrow.setLength(6, 3, 1);
 }
 
 startConnect();
