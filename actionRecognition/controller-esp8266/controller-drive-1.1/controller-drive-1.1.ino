@@ -310,6 +310,15 @@ void readMag() {
     Serial.print(mZ/1000);
     Serial.print(", mag: ");
     Serial.println(magnitude);
+	
+	/*
+	pitch  = mY/1000;
+	roll   = mZ/1000;
+	yaw    = mX/1000;
+	pitch  =  map(pitch,??, ??, MIN_DEG, MAX_DEG);
+	roll   = -map(roll, ??, ??, MIN_DEG, MAX_DEG);
+	yaw    =  map(yaw,  ??, ??, MIN_DEG, MAX_DEG);
+	*/
   }
   delay(20);
 }
