@@ -234,7 +234,7 @@ void setup() {
   //deviceId = String(WiFi.macAddress());
   initWiFi();
   initMPU6050();
-  //initMAG3110();
+  initMAG3110();
   initMQTT();
 }
 
@@ -260,7 +260,6 @@ void loop() {
   roll   = -map(roll, -90, +90, MIN_DEG, MAX_DEG);
   yaw    =  map(yaw,  -90, +90, MIN_DEG, MAX_DEG);
 
-  /*
   //Orientation
   Serial.print("Orientation:");
   Serial.print("x=");
@@ -271,10 +270,9 @@ void loop() {
   Serial.print(",");       
   Serial.print("z=");    
   Serial.println(mag_read_z());
-  //pitch  = mag_read_z();
-  //roll   = mag_read_y();
-  //yaw    = mag_read_x();
-  */
+  //pitch  = mag_read_z()/100;
+  //roll   = mag_read_y()/100;
+  //yaw    = mag_read_x()/100;
   
   //inizializza e riempie il json di risposta
   DynamicJsonDocument readings(1024);
