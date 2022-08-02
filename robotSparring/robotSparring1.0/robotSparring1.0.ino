@@ -91,8 +91,6 @@ void setup() {
 }
 
 bool start = true;
-int shotDuration = 600;
-int pause = 1000;
 
 void startPosition() {
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
@@ -105,73 +103,114 @@ void straightRight() {
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(110));
 	pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(110));
-	delay(shotDuration);
+	delay(600);
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
 	pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
 }
 
 void straightLeft() {
-	pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
-	pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
-	pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
-	delay(shotDuration);
-	pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
-	pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
+  delay(600);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
 }
 
 void hookRight() {
-	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
+	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(140));
 	pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
-	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
-	delay(shotDuration);
+	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(140));
+	delay(600);
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
 	pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
 }
 
 void hookLeft() {
-	pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+	pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
 	pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
-	pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
-	delay(shotDuration);
+	pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
+	delay(600);
 	pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
 	pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
 }
 
+void doubleStraight() {
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(110));
+  delay(600);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
+  delay(600);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+}
+
+void doubleStraightInverse() {
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
+  delay(600);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(110));
+  delay(600);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
+}
+
+int getRandomAction() {
+    int n = random(101);
+    if (n < 60) // 60% straight
+        return 0;
+    if (n < (60 + 20)) // 20% hook (we exclude the 30% above)
+        return 1;
+    if (n < (60 + 20 + 20))  // 20% doubleStraight (we exclude the ones above)
+        return 2;
+    return 0; 
+}
+
+int getRandomSide() {
+    int n = random(101);
+    if (n < 50) // 50%
+        return 0;
+    return 1; 
+}
+
 void loop() {
 	if(start) {
-		startPosition()
-		delay(pause);
+		startPosition();
+		delay(1000);
 		straightRight();
-		delay(pause);
+		delay(1000);
 		straightLeft();
-		delay(pause);
+		delay(1000);
 		hookRight();
-		delay(pause);
+		delay(1000);
 		hookLeft();
 		delay(2000);
 		
 		startPosition();
 		start = false;
-		delay(pause);
+		delay(1000);
 	}
 	
 	//random shot
-	switch(random(1, 5)) {
-      case 1:
-         straightRight();
+	switch(getRandomAction()) {
+    case 0: //straight
+         (getRandomSide()==0 ? straightRight() : straightLeft());
          break;
-     case 2:
-         straightLeft();
+    case 1: //hook
+         (getRandomSide()==0 ? hookRight() : hookLeft());
          break;
-     case 3:
-         hookRight();
-         break;		 
-	 case 4:
-         hookLeft();
+    case 2: //doubleStraight
+         (getRandomSide()==0 ? doubleStraight() : doubleStraightInverse());
          break;
-      default:
-         startPosition()
+    default:
+         startPosition();
          break;
    }
-   delay(pause);
+   delay(1000);
 }
