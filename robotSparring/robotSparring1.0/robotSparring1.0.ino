@@ -1,15 +1,15 @@
-
+//ESP-WROOM-32 38 PIN Develeopment
 //http://arduino.esp8266.com/stable/package_esp8266com_index.json
 //https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 
 #include "WiFi.h"
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+//#include <Adafruit_GFX.h>
+//#include <Adafruit_SSD1306.h>
 
-const char* ssid = "Vodafone-C01960075";
-const char* password = "tgYsZkgHA4xhJLGy";
+char* ssid = "Vodafone-C01960075";
+char* password = "tgYsZkgHA4xhJLGy";
 WiFiClient espClient;
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
@@ -17,17 +17,17 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
 #define SERVOMAX  575 // this is the 'maximum' pulse length count (out of 4096)
 		
 //joint
-#define RIGHT_ARM		0
-#define RIGHT_SHOULDER  1
-#define LEFT_SHOULDER	14
-#define LEFT_ARM	  	15
+#define LEFT_ARM		    0
+#define LEFT_SHOULDER   1
+#define RIGHT_SHOULDER	14
+#define RIGHT_ARM	  	  15
 
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+//#define SCREEN_WIDTH 128 // OLED display width, in pixels
+//#define SCREEN_HEIGHT 64 // OLED display height, in pixels
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-#define NUMFLAKES     10 // Number of snowflakes in the animation example
+//#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+//Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+//#define NUMFLAKES     10 // Number of snowflakes in the animation example
 
 
 int angleToPulse(int ang){
@@ -43,7 +43,7 @@ void initServoDriver() {
 	pwm.begin();
 	pwm.setPWMFreq(60);
 }
-
+/*
 //inizializza il display
 void initDisplay() {
 	display.display();
@@ -54,7 +54,7 @@ void initDisplay() {
 	display.setTextColor(WHITE); // Draw white text
 	display.setCursor(0, 0);     // Start at top-left corner
 	display.cp437(true); 		 // Use full 256 char 'Code Page 437' font
-}
+}*/
 
 //inizializza la WiFi
 void initWiFi() {
@@ -76,23 +76,51 @@ void initWiFi() {
   Serial.print("IP address:\t");
   Serial.println(WiFi.localIP());
   Serial.println("");
-  display.write(WiFi.localIP());
+  //display.write("Hello!");
+  //display.write(WiFi.localIP());
   
-  digitalWrite(LED, LOW);
   delay(1000);
 }
 
 void setup() {
   Serial.begin(115200);
   initServoDriver();
-  initDisplay();
+  //initDisplay();
   initWiFi();
 }
 
 void loop() {
-	for( int angle = 0; angle < 181; angle += 10) {
-		pwm.setPWM(RIGHT_ARM, 0, angleToPulse(angle));
-    }
-  
-	delay(100);
+	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+	pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+  delay(1000);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(110));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(110));
+  delay(600);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
+  delay(1000);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
+  delay(600);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+  delay(1000);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
+  delay(600);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
+  delay(1000);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  delay(600);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+  delay(2000);
 }
