@@ -42,6 +42,7 @@ int angleToPulse(int ang){
 //inizializza il servo driver
 void initServoDriver() {
 	pwm.begin();
+  //pwm.setOscillatorFrequency(27000000);
 	pwm.setPWMFreq(60);
 }
 /*
@@ -161,6 +162,68 @@ void doubleStraightInverse() {
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
 }
 
+void test() {
+  /*pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(45));
+  for (int pos = 0; pos <= 110; pos += 30) {
+    pwm.setPWM(RIGHT_ARM, 0, angleToPulse(pos));           
+    delay(15);
+  }
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  delay(1000);
+
+   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(45));
+  for (int pos = 0; pos <= 110; pos += 30) {
+    pwm.setPWM(RIGHT_ARM, 0, angleToPulse(pos));           
+    delay(15);
+  }
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  delay(1000);
+
+   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(45));
+  for (int pos = 0; pos <= 110; pos += 30) {
+    pwm.setPWM(RIGHT_ARM, 0, angleToPulse(pos));           
+    delay(20);
+  }
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));*/
+
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
+  
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(90));
+  delay(600);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(90));
+  delay(600);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+
+  delay(1000);
+
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(90));
+  delay(600);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(90));
+  delay(600);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+
+  delay(1000);
+
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(90));
+  delay(600);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(90));
+  delay(600);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
+}
+
 int getRandomAction() {
     int n = random(101);
     if (n < 60) // 60% straight
@@ -183,6 +246,8 @@ void loop() {
 	if(start) {
 		startPosition();
 		delay(1000);
+    test();
+    delay(1000);
 		straightRight();
 		delay(1000);
 		straightLeft();
