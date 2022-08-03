@@ -92,6 +92,9 @@ void setup() {
 }
 
 bool start = true;
+bool rightShot = true;
+unsigned long shotDuration = 700;
+unsigned long shotPause    = 1000;
 
 void startPosition() {
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
@@ -101,19 +104,19 @@ void startPosition() {
 }
 
 void straightRight() {
-	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(110));
+	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
 	pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
-	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(110));
-	delay(600);
+	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
+	delay(shotDuration);
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
 	pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
 }
 
 void straightLeft() {
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
-  delay(600);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
 }
@@ -122,7 +125,7 @@ void hookRight() {
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(140));
 	pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(140));
-	delay(600);
+	delay(shotDuration);
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
 	pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
 }
@@ -131,33 +134,113 @@ void hookLeft() {
 	pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
 	pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
 	pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
-	delay(600);
+	delay(shotDuration);
 	pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
 	pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
 }
 
-void doubleStraight() {
+void doubleStraightRightLeft() {
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
-  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(110));
-  delay(600);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
-  delay(600);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
 }
 
-void doubleStraightInverse() {
+void doubleStraightLeftRight() {
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
-  delay(600);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
-  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(110));
-  delay(600);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
+}
+
+void doubleStraightRightRight() {
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  delay(shotDuration);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+}
+
+void doubleStraightLeftLeft() {
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  delay(shotDuration);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
+}
+
+void straightRightAndHookLeft() {
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
+  delay(shotDuration);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+}
+
+void straightLeftAndHookRight() {
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(140));
+  delay(shotDuration);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
+}
+
+void hookRightAndStraightLeft() {
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(140));
+  delay(shotDuration);
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+}
+
+void hookLeftAndStraightRight() {
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
+  pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
+  delay(shotDuration);
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
+  pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
+  pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
+  delay(shotDuration);
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
 }
@@ -171,7 +254,7 @@ void test() {
   }
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
-  delay(1000);
+  delay(shotPause);
 
    pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(45));
@@ -181,7 +264,7 @@ void test() {
   }
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
-  delay(1000);
+  delay(shotPause);
 
    pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(45));
@@ -196,28 +279,28 @@ void test() {
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(90));
-  delay(600);
+  delay(shotDuration);
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(90));
-  delay(600);
+  delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
 
-  delay(1000);
+  delay(shotPause);
 
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(90));
-  delay(600);
+  delay(shotDuration);
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(90));
-  delay(600);
+  delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
 
-  delay(1000);
+  delay(shotPause);
 
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(90));
-  delay(600);
+  delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(90));
-  delay(600);
+  delay(shotDuration);
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
@@ -226,56 +309,77 @@ void test() {
 
 int getRandomAction() {
     int n = random(101);
-    if (n < 60) // 60% straight
+    if (n < 30) // 30% straight
         return 0;
-    if (n < (60 + 20)) // 20% hook (we exclude the 30% above)
+    if (n < (30 + 10)) // 10% hook (we exclude the 30% above)
         return 1;
-    if (n < (60 + 20 + 20))  // 20% doubleStraight (we exclude the ones above)
+    if (n < (30 + 10 + 15))  // 15% doubleStraight (we exclude the ones above)
         return 2;
+    if (n < (30 + 10 + 15 + 15))  // 15% doubleStraightSameSide (we exclude the ones above)
+        return 3;
+    if (n < (30 + 10 + 15 + 15 + 15))  // 15% straightAndHook (we exclude the ones above)
+        return 4;
+    if (n < (30 + 10 + 15 + 15 + 15 +15))  // 15% hookAndStraight (we exclude the ones above)
+        return 5;
     return 0; 
 }
 
-int getRandomSide() {
+int changeSidePropability() {
     int n = random(101);
-    if (n < 50) // 50%
-        return 0;
-    return 1; 
+    if (n < 80) // 80%
+        return 1;
+    return 0; 
 }
+
 
 void loop() {
 	if(start) {
 		startPosition();
-		delay(1000);
+		delay(shotPause);
     test();
-    delay(1000);
+    delay(shotPause);
 		straightRight();
-		delay(1000);
+		delay(shotPause);
 		straightLeft();
-		delay(1000);
+		delay(shotPause);
 		hookRight();
-		delay(1000);
+		delay(shotPause);
 		hookLeft();
 		delay(2000);
 		
 		startPosition();
 		start = false;
-		delay(1000);
+		delay(shotPause);
 	}
-	
+
+  //in base ad una probabilità cambia lato (destra-sinistra) del colpo
+  if(changeSidePropability() == 1) {
+    rightShot = !rightShot;
+  }
+  
 	//random shot
 	switch(getRandomAction()) {
     case 0: //straight
-         (getRandomSide()==0 ? straightRight() : straightLeft());
+         (rightShot ? straightRight() : straightLeft());
          break;
     case 1: //hook
-         (getRandomSide()==0 ? hookRight() : hookLeft());
+         (rightShot ? hookRight() : hookLeft());
          break;
     case 2: //doubleStraight
-         (getRandomSide()==0 ? doubleStraight() : doubleStraightInverse());
+         (rightShot ? doubleStraightRightLeft() : doubleStraightLeftRight());
+         break;
+    case 3: //doubleStraightSameSide
+         (rightShot ? doubleStraightRightRight() : doubleStraightLeftLeft());
+         break;
+    case 4: //straightAndHook()
+         (rightShot ? straightRightAndHookLeft() : straightLeftAndHookRight());
+         break;
+    case 5: //hookAndStraight()
+         (rightShot ? hookRightAndStraightLeft() : hookLeftAndStraightRight());
          break;
     default:
          startPosition();
          break;
    }
-   delay(1000);
+   delay(shotPause);
 }
