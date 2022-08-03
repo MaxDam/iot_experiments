@@ -5,8 +5,8 @@
 #include "WiFi.h"
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
-//#include <Adafruit_GFX.h>
-//#include <Adafruit_SSD1306.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 char* ssid = "Vodafone-C01960075";
 char* password = "tgYsZkgHA4xhJLGy";
@@ -22,14 +22,11 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
 #define RIGHT_SHOULDER	14
 #define RIGHT_ARM	  	15
 
-/*
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET    -1
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-#define NUMFLAKES     10 // Number of snowflakes in the animation example
-*/
 
 int angleToPulse(int ang){
    int pulse = map(ang, 0, 180, SERVOMIN,SERVOMAX);// map angle of 0 to 180 to Servo min and Servo max 
@@ -45,18 +42,31 @@ void initServoDriver() {
   //pwm.setOscillatorFrequency(27000000);
 	pwm.setPWMFreq(60);
 }
-/*
+
 //inizializza il display
 void initDisplay() {
-	display.display();
-	delay(2000);
-	display.clearDisplay();
-	
-	display.setTextSize(1);      // Normal 1:1 pixel scale
-	display.setTextColor(WHITE); // Draw white text
-	display.setCursor(0, 0);     // Start at top-left corner
-	display.cp437(true); 		 // Use full 256 char 'Code Page 437' font
-}*/
+	// initialize OLED display with I2C address 0x3C
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("failed to start SSD1306 OLED"));
+    while (1);
+  }
+
+  delay(2000);        
+  display.clearDisplay(); 
+
+  display.setTextSize(1);         
+  display.setTextColor(WHITE);    
+  display.setCursor(0, 24);       
+  display.println("Hello!");     
+  display.display();              
+}
+
+void displayText(String text) {
+  display.clearDisplay(); 
+  display.setCursor(0, 24);
+  display.println(text);     
+  display.display(); 
+}
 
 //inizializza la WiFi
 void initWiFi() {
@@ -78,7 +88,6 @@ void initWiFi() {
   Serial.print("IP address:\t");
   Serial.println(WiFi.localIP());
   Serial.println("");
-  //display.write("Hello!");
   //display.write(WiFi.localIP());
   
   delay(1000);
@@ -87,7 +96,7 @@ void initWiFi() {
 void setup() {
   Serial.begin(115200);
   initServoDriver();
-  //initDisplay();
+  initDisplay();
   //initWiFi();
 }
 
@@ -104,6 +113,7 @@ void startPosition() {
 }
 
 void straightRight() {
+  displayText("straight right");
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
 	pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
@@ -113,6 +123,7 @@ void straightRight() {
 }
 
 void straightLeft() {
+  displayText("straight left");
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
@@ -122,6 +133,7 @@ void straightLeft() {
 }
 
 void hookRight() {
+  displayText("hook right");
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(140));
 	pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(140));
@@ -131,6 +143,7 @@ void hookRight() {
 }
 
 void hookLeft() {
+  displayText("hook left");
 	pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
 	pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
 	pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
@@ -140,10 +153,12 @@ void hookLeft() {
 }
 
 void doubleStraightRightLeft() {
+  displayText("straight right");
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
   delay(shotDuration);
+  displayText("straight left");
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
@@ -153,10 +168,12 @@ void doubleStraightRightLeft() {
 }
 
 void doubleStraightLeftRight() {
+  displayText("straight left");
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
   delay(shotDuration);
+  displayText("straight right");
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
@@ -166,12 +183,14 @@ void doubleStraightLeftRight() {
 }
 
 void doubleStraightRightRight() {
+  displayText("straight right");
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
   delay(shotDuration);
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   delay(shotDuration);
+  displayText("straight right");
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
   delay(shotDuration);
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
@@ -180,12 +199,14 @@ void doubleStraightRightRight() {
 }
 
 void doubleStraightLeftLeft() {
+  displayText("straight left");
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
   delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   delay(shotDuration);
+  displayText("straight left");
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
   delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
@@ -194,10 +215,12 @@ void doubleStraightLeftLeft() {
 }
 
 void straightRightAndHookLeft() {
+  displayText("straight right");
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
   delay(shotDuration);
+  displayText("hook left");
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
@@ -207,10 +230,12 @@ void straightRightAndHookLeft() {
 }
 
 void straightLeftAndHookRight() {
+  displayText("straight left");
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
   delay(shotDuration);
+  displayText("hook right");
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(140));
@@ -220,10 +245,12 @@ void straightLeftAndHookRight() {
 }
 
 void hookRightAndStraightLeft() {
+  displayText("hook right");
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(140));
   delay(shotDuration);
+  displayText("straight left");
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
@@ -233,10 +260,12 @@ void hookRightAndStraightLeft() {
 }
 
 void hookLeftAndStraightRight() {
+  displayText("hook left");
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
   delay(shotDuration);
+  displayText("straight right");
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(120));
