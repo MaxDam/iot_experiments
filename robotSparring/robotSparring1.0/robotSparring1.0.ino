@@ -8,39 +8,63 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+//wifi
 char* ssid = "Vodafone-C01960075";
 char* password = "tgYsZkgHA4xhJLGy";
 WiFiClient espClient;
 
+//servo driver
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
-#define SERVOMIN  125 // this is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  575 // this is the 'maximum' pulse length count (out of 4096)
-		
+#define SERVO_MIN_PULSE_WIDTH 125 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVO_MAX_PULSE_WIDTH 575 // this is the 'maximum' pulse length count (out of 4096)
+#define SERVO_FREQUENCY 60
+//#define SERVO_MIN_PULSE_WIDTH 600
+//#define SERVO_MAX_PULSE_WIDTH 2600
+//#define SERVO_FREQUENCY 50
+
 //joint
 #define LEFT_ARM		0
 #define LEFT_SHOULDER   1
 #define RIGHT_SHOULDER	14
 #define RIGHT_ARM	  	15
 
-
+//display
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET    -1
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+//vars
+bool start = true;
+bool rightShot = true;
+unsigned long shotDuration = 700;
+unsigned long shotPause    = 1000;
+
 int angleToPulse(int ang){
-   int pulse = map(ang, 0, 180, SERVOMIN,SERVOMAX);// map angle of 0 to 180 to Servo min and Servo max 
+   int pulse = map(ang, 0, 180, SERVO_MIN_PULSE_WIDTH, SERVO_MAX_PULSE_WIDTH);// map angle of 0 to 180 to Servo min and Servo max 
    Serial.print("Angle: ");Serial.print(ang);
    Serial.print(" pulse: ");Serial.println(pulse);
    return pulse;
 }
 
+/*
+int pulseWidth(int angle){
+   int pulse_wide, analog_value;
+   pulse_wide = map(angle, 0, 180, SERVO_MIN_PULSE_WIDTH, SERVO_MAX_PULSE_WIDTH);
+   analog_value = int(float(pulse_wide) / 1000000 * SERVO_FREQUENCY * 4096);
+   Serial.print("Angle: ");Serial.print(angle);
+   Serial.print(" pulse: ");Serial.println(pulse_wide);
+   Serial.print(" analog value: ");Serial.println(analog_value);
+   return analog_value;
+}
+*/
 
 //inizializza il servo driver
 void initServoDriver() {
 	pwm.begin();
-  //pwm.setOscillatorFrequency(27000000);
-	pwm.setPWMFreq(60);
+  pwm.setOscillatorFrequency(27000000);
+  pwm.setPWMFreq(SERVO_FREQUENCY);
+  delay(10);
 }
 
 //inizializza il display
@@ -61,6 +85,7 @@ void initDisplay() {
   display.display();              
 }
 
+//display string text on the center
 void displayText(String text) {
   display.clearDisplay(); 
   display.setCursor(0, 24);
@@ -100,11 +125,6 @@ void setup() {
   //initWiFi();
 }
 
-bool start = true;
-bool rightShot = true;
-unsigned long shotDuration = 700;
-unsigned long shotPause    = 1000;
-
 void startPosition() {
 	pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
 	pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
@@ -124,9 +144,9 @@ void straightRight() {
 
 void straightLeft() {
   displayText("straight left");
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
   delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
@@ -144,9 +164,9 @@ void hookRight() {
 
 void hookLeft() {
   displayText("hook left");
-	pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
+	pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
 	pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
-	pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
+	pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
 	delay(shotDuration);
 	pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
 	pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
@@ -161,7 +181,7 @@ void doubleStraightRightLeft() {
   displayText("straight left");
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
   delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
@@ -171,7 +191,7 @@ void doubleStraightLeftRight() {
   displayText("straight left");
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
   delay(shotDuration);
   displayText("straight right");
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
@@ -202,12 +222,12 @@ void doubleStraightLeftLeft() {
   displayText("straight left");
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
   delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   delay(shotDuration);
   displayText("straight left");
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
   delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
@@ -223,7 +243,7 @@ void straightRightAndHookLeft() {
   displayText("hook left");
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
   delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
@@ -233,7 +253,7 @@ void straightLeftAndHookRight() {
   displayText("straight left");
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
   delay(shotDuration);
   displayText("hook right");
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
@@ -253,7 +273,7 @@ void hookRightAndStraightLeft() {
   displayText("straight left");
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(45));
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(110));
   delay(shotDuration);
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(45));
@@ -263,7 +283,7 @@ void hookLeftAndStraightRight() {
   displayText("hook left");
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
-  pwm.setPWM(LEFT_ARM, 0, angleToPulse(140));
+  pwm.setPWM(LEFT_ARM, 0, angleToPulse(120));
   delay(shotDuration);
   displayText("straight right");
   pwm.setPWM(LEFT_ARM, 0, angleToPulse(0));
@@ -304,6 +324,28 @@ void test() {
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(0));
   pwm.setPWM(RIGHT_ARM, 0, angleToPulse(0));*/
 
+  for (uint16_t pulselen = SERVO_MIN_PULSE_WIDTH; pulselen < SERVO_MAX_PULSE_WIDTH; pulselen++) {
+    pwm.setPWM(RIGHT_ARM, 0, pulselen);
+  }
+  for (uint16_t pulselen = SERVO_MAX_PULSE_WIDTH; pulselen > SERVO_MIN_PULSE_WIDTH; pulselen--) {
+    pwm.setPWM(RIGHT_ARM, 0, pulselen);
+  }
+  delay(500);
+  for (uint16_t pulselen = SERVO_MIN_PULSE_WIDTH; pulselen < SERVO_MAX_PULSE_WIDTH; pulselen++) {
+    pwm.setPWM(RIGHT_ARM, 0, pulselen);
+  }
+  for (uint16_t pulselen = SERVO_MAX_PULSE_WIDTH; pulselen > SERVO_MIN_PULSE_WIDTH; pulselen--) {
+    pwm.setPWM(RIGHT_ARM, 0, pulselen);
+  }
+  delay(500);
+  for (uint16_t pulselen = SERVO_MIN_PULSE_WIDTH; pulselen < SERVO_MAX_PULSE_WIDTH; pulselen++) {
+    pwm.setPWM(RIGHT_ARM, 0, pulselen);
+  }
+  for (uint16_t pulselen = SERVO_MAX_PULSE_WIDTH; pulselen > SERVO_MIN_PULSE_WIDTH; pulselen--) {
+    pwm.setPWM(RIGHT_ARM, 0, pulselen);
+  }
+  delay(500);
+
   pwm.setPWM(RIGHT_SHOULDER, 0, angleToPulse(90));
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(90));
   
@@ -336,6 +378,7 @@ void test() {
   pwm.setPWM(LEFT_SHOULDER, 0, angleToPulse(0));
 }
 
+//decides the action based on probability
 int getRandomAction() {
     int n = random(101);
     if (n < 30) // 30% straight
@@ -353,6 +396,7 @@ int getRandomAction() {
     return 0; 
 }
 
+//decides the side based on probability
 int changeSidePropability() {
     int n = random(101);
     if (n < 80) // 80%
@@ -381,7 +425,7 @@ void loop() {
 		delay(shotPause);
 	}
 
-  //in base ad una probabilità cambia lato (destra-sinistra) del colpo
+  //change shot side based on probability
   if(changeSidePropability() == 1) {
     rightShot = !rightShot;
   }
