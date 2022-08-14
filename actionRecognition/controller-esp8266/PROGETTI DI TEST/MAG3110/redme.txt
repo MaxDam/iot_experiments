@@ -1,3 +1,0 @@
-http://www.esp8266learning.com/wemos-mag3110-magnetometer.php
-https://learn.sparkfun.com/tutorials/mag3110-magnetometer-hookup-guide-/all
-https://github.com/sparkfun/SparkFun_MAG3110_Breakout_Board_Arduino_Library
